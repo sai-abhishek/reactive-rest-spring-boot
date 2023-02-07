@@ -45,6 +45,11 @@
             <artifactId>tomcat-embed-core</artifactId>
             <version>9.0.71</version>
         </dependency>
+        <dependency>
+            <groupId>com.okta.spring</groupId>
+            <artifactId>okta-spring-boot-starter</artifactId>
+            <version>2.1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
