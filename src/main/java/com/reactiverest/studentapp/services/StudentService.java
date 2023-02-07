@@ -1,6 +1,7 @@
 package com.reactiverest.studentapp.services;
 
 import com.reactiverest.studentapp.models.Student;
+import com.reactiverest.studentapp.models.StudentNotFoundException;
 import com.reactiverest.studentapp.repositories.StudentRepository;
 
 import org.slf4j.Logger;
@@ -26,18 +27,21 @@ public class StudentService {
     }
 
     public Mono<Student> getStudent(final String id) {
-        return this.repository.findById(id);
+        return this.repository.findById(id)
+                .switchIfEmpty(Mono.error(new StudentNotFoundException(id)));
     }
 
     public Mono<Student> removeStudent(final String id) {
         return this.repository.findById(id)
-                .flatMap(student -> this.repository.deleteById(id).thenReturn(student));
+                .flatMap(student -> this.repository.deleteById(id).thenReturn(student))
+                .switchIfEmpty(Mono.error(new StudentNotFoundException(id)));
     }
 
     public Mono<Student> updateStudent(final Student student) {
         return this.repository.findById(student.getId())
                 .map(studentData -> student)
-                .flatMap(this.repository::save);
+                .flatMap(this.repository::save)
+                .switchIfEmpty(Mono.error(new StudentNotFoundException(student.getId())));
     }
 
     public Mono<Student> addStudent(final Student student) {
