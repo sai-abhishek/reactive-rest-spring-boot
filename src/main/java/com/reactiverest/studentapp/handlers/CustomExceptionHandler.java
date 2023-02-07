@@ -1,6 +1,7 @@
 package com.reactiverest.studentapp.handlers;
 
 import com.reactiverest.studentapp.models.StudentNotFoundException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,11 @@ public class CustomExceptionHandler implements WebExceptionHandler {
         if (ex instanceof StudentNotFoundException) {
             // Custom exception handler for Student Not Found
             exchange.getResponse().setStatusCode(HttpStatus.NOT_FOUND);
+            return exchange.getResponse().setComplete();
+
+        } else if (ex instanceof RequestNotPermitted) {
+            // Custom exception handler for Rate limited request
+            exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
             return exchange.getResponse().setComplete();
 
         }
