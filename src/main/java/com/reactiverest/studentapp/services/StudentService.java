@@ -1,5 +1,6 @@
 package com.reactiverest.studentapp.services;
 
+import com.google.gson.Gson;
 import com.reactiverest.studentapp.models.Student;
 import com.reactiverest.studentapp.models.StudentNotFoundException;
 import com.reactiverest.studentapp.repositories.StudentRepository;
@@ -23,29 +24,34 @@ public class StudentService {
     // CRUD operations for student
     
     public Flux<Student> getStudents() {
-        return this.repository.findAll();
+        return this.repository.findAll()
+                .doOnNext(student -> logger.info("/GET all students, {}", new Gson().toJson(student)));
     }
 
     public Mono<Student> getStudent(final String id) {
         return this.repository.findById(id)
-                .switchIfEmpty(Mono.error(new StudentNotFoundException(id)));
+                .switchIfEmpty(Mono.error(new StudentNotFoundException(id)))
+                .doOnNext(student -> logger.info("/GET student by ID , {}", new Gson().toJson(student)));
     }
 
     public Mono<Student> removeStudent(final String id) {
         return this.repository.findById(id)
+                .switchIfEmpty(Mono.error(new StudentNotFoundException(id)))
                 .flatMap(student -> this.repository.deleteById(id).thenReturn(student))
-                .switchIfEmpty(Mono.error(new StudentNotFoundException(id)));
+                .doOnNext(student -> logger.info("/DELETE student by ID, {}", new Gson().toJson(student)));
     }
 
     public Mono<Student> updateStudent(final Student student) {
         return this.repository.findById(student.getId())
+                .switchIfEmpty(Mono.error(new StudentNotFoundException(student.getId())))
                 .map(studentData -> student)
                 .flatMap(this.repository::save)
-                .switchIfEmpty(Mono.error(new StudentNotFoundException(student.getId())));
+                .doOnNext(studentData -> logger.info("/DELETE student by ID, {}", new Gson().toJson(studentData)));
     }
 
     public Mono<Student> addStudent(final Student student) {
-        return this.repository.save(student);
+        return this.repository.save(student)
+                .doOnNext(studentData -> logger.info("/POST student by ID, {}", new Gson().toJson(studentData)));
     }
 
 }
